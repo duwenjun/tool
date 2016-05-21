@@ -1,0 +1,42 @@
+Nginx版本1.8.0
+
+1.下载安装LuaJIT
+cd /usr/local/src
+wget http://luajit.org/download/LuaJIT-2.0.2.tar.gz
+tar -xzvf LuaJIT-2.0.2.tar.gz
+cd LuaJIT-2.0.2
+make
+make install
+
+2. 下载准备nginx lua模块
+cd /usr/local/src
+wget https://github.com/openresty/lua-nginx-module/archive/v0.9.7.tar.gz
+tar -zxvf v0.9.7.tar.gz
+
+3. 安装nginx-lua模块
+//先导入环境变量,告诉nginx去哪里找luajit
+cd Nginx源码目录   #cd /root/lnmp1.2/src/nginx-1.8.0
+
+export LUAJIT_LIB=/usr/local/lib
+export LUAJIT_INC=/usr/local/include/luajit-2.0
+
+./configure --user=www --group=www --prefix=/usr/local/nginx --add-module=/usr/local/src/lua-nginx-module-0.9.7 --with-http_stub_status_module --with-http_ssl_module --with-http_spdy_module --with-http_gzip_static_module --with-ipv6 --with-http_sub_module
+
+make
+
+mv /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak
+cp objs/nginx /usr/local/nginx/sbin/nginx
+service nginx restart
+
+
+总结,安装nginx安装第三方模块实际上是使用–add-module重新安装一次nginx，不要make install而是直接把编译目录下objs/nginx文件直接覆盖老的nginx文件.如果你需要安装多个nginx第三方模块,你只需要多指定几个相应的–add-module即可.
+备注：重新编译的时候，记得一定要把以前编译过的模块一同加到configure参数里面.
+nginx提供了非常多的nginx第三方模块提供安装,地址http://wiki.nginx.org/3rdPartyModules
+
+
+3.1 常见错误
+
+# /usr/local/nginx/sbin/nginx -v
+./objs/nginx: error while loading shared libraries: libluajit-5.1.so.2: cannot open shared object file: No such file or directory
+解决方法：
+# ln -s /usr/local/lib/libluajit-5.1.so.2 /lib64/libluajit-5.1.so.2

@@ -1,0 +1,19 @@
+1.Nginx是一款开放源代码的高性能HTTP服务器和反向代理服务器，同时支持IMAP/POP3代理服务，这是一款自由的软件。Nginx以高性能，高可用，丰富的功能模块，简单明了的配置文档以及低资源占用而著称。
+2.下载软件包
+wget http://nginx.org/download/nginx-1.8.0.tar.gz
+
+3.安装基础服务包
+yum -y install gcc pcre pcre-devel openssl openssl-devel gd gd-devel perl perl-ExtUtils-Embed
+
+4.解压包
+tar -xzf nginx-1.8.0.tar.gz -C /usr/src/
+
+5.安装
+cd  /usr/src/nginx-1.8.0
+./configure --prefix=/usr/local/nginx --with-ipv6 --with-http_ssl_module --with-http_realip_module --with-http_addition_module --with-http_dav_module --with-http_flv_module --with-http_mp4_module --with-http_gzip_static_module --with-http_perl_module --with-mail --with-mail_ssl_module
+make && make install
+
+6.操作
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf   #启动
+/usr/local/nginx/sbin/nginx -s stop   #关闭
+/usr/local/nginx/sbin/nginx -s reload #重新加载设置

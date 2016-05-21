@@ -1,0 +1,44 @@
+1.HTTPS协议加密介绍
+一般情况下，网站使用的是明文传输模式。但日常生活中我们经常会遇到在进行网银交易时，银行网站会被自动跳到SSL(Secure Sockets Layer)加密传输模式，SSL的功能是提供加密数据。这样我们的TCP/IP协议就可以专心做好自己的事情，网络传输过程中的数据加密则全权委托给SSL协议来完成。Apache HTTP Server通过mod_ssl模块来实现对SSL/TLS的支持。
+   不管是SSL还是TLS，都是基于非对称加密算法实现的网络数据安全，非对称加密算法使用公钥与私钥两把不同的钥匙，公钥与私钥是不可逆的。也就是说，使用公钥无法推算出私钥，使用私钥也无法推算出公钥。非对称加密使得拥有公钥的用户加密自己的数据后，通过网络将加密数据发送给拥有私钥的人，这个过程中，如果有人拦截了该加密后的数据，但你是不能解密该数据的，甚至加密者自己都无法将公钥加密后的数据解开，因为别人没有密钥，而加密者本人也仅有公钥，而非对称加密使用的是公钥加密和私钥解密机制。但个人生成的公钥与私有是不被信任的，只有经过CA认证后才被认为是可信任的密钥。目前大多数浏览器都内置了国际知名CA的根证书中心，如果我们的密钥被CA中心认证签名过，那就是合法的数字证书。而CA验证密钥需要经过一个非常复杂的流程，所以很多人通过自签名生成数字证书，也就是所谓的自签名证书。在centos环境中，如果需要生成密钥与证书，可以选择opensll工具创建，具体用法如下
+
+2.生成密钥
+openssl genrsa -out cert.key 2048 #生成私钥
+openssl req -new -x509 -key cert.key -out cert.pem  #根据私钥生成根证书
+Country Name (2 letter code)[XX]:CN     #国家名称
+State or Province Name (full name)[]:Beijing #省份
+Locality Name(eg, city) [Default City]: Beijing #城市
+Organizational Unit Name (eg, section) []: tech  #部门名称
+Common Name (eg, your name or your server's hostname) []:web1 #主机名称
+Email Address []:duwenjung@sina.com     #电子邮件
+
+cp {cert.key,cert.pem} /usr/local/nginx/conf/   #复制证书
+
+默认情况下，Nginx SSL模块是不被编译的，如果需要部署SSL网站，需要在编译Nginx时使用--with-http_ssl_module参数，而编译该模块需要OpenSSL库文件，一般需要安装openssl与openssl-devel软件
+
+加入server配置
+server{
+	listen 443;
+	server_name www.testssl.com;
+	ssl on;
+	ssl_certificate cert.pem;
+	ssl_certificate_key cert.key;
+	ssl_session_timeout 5m;
+	ssl_protocols SSLv2 SSLv3 TLSv1;
+	ssl_ciphers HIGH:!aNULL:!MD5;
+	ssl_prefer_server_ciphers on;
+	location /{
+		root html/testssl;
+		index index.html index.htm;
+	}
+}
+
+
+mkdir /usr/local/nginx/html/testssl
+echo "hello world testssl https" > /usr/local/nginx/html/testssl/index.html
+
+/usr/local/apache2/bin/apachectl restart
+iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+service iptables save
+
+访问https://www.testssl.com

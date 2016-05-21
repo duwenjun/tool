@@ -1,0 +1,32 @@
+1.apache 安装依赖apr和apr-util库
+2.下载软件包
+wget http://mirror.bit.edu.cn/apache/httpd/httpd-2.4.17.tar.gz
+wget http://mirror.bjtu.edu.cn/apache/apr/apr-1.5.2.tar.gz
+wget http://mirror.bjtu.edu.cn/apache/apr/apr-util-1.5.4.tar.gz
+
+3.安装基础服务包
+yum -y install gcc autoconf automake make pcre pcre-devel openssl openssl-devel
+
+4.解压包
+tar -xzf httpd-2.4.17.tar.gz -C /usr/src/
+tar -xzf apr-1.5.2.tar.gz -C /usr/src/
+tar -xzf apr-util-1.5.4.tar.gz -C /usr/src/
+
+5.依次安装
+cd /usr/src/apr-1.5.2
+./configure --prefix=/usr/local/apr
+make && make install
+
+cd /usr/src/apr-util-1.5.4
+./configure --with-apr=/usr/local/apr/
+make && make install
+
+cd /usr/src/httpd-2.4.17
+./configure --prefix=/usr/local/apache2 --enable-so --enable-ssl --enable-rewrite --with-mpm=worker --with-suexec-biin --with-par=/usr/local/apr/
+make && make install
+
+6.启动
+/usr/local/apache2/bin/apachectl start
+#防火墙允许80端口访问
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+service iptables save

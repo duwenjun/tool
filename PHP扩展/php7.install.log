@@ -1,0 +1,55 @@
+﻿
+./configure --prefix=/usr/local/php7 \
+ --with-curl \
+ --with-freetype-dir \
+ --with-gd \
+ --with-gettext \
+ --with-iconv-dir \
+ --with-kerberos \
+ --with-libdir=lib64 \
+ --with-libxml-dir \
+ --with-mysqli \
+ --with-openssl \
+ --with-pcre-regex \
+ --with-pdo-mysql \
+ --with-pdo-sqlite \
+ --with-pear \
+ --with-png-dir \
+ --with-xmlrpc \
+ --with-xsl \
+ --with-zlib \
+ --enable-fpm \
+ --enable-bcmath \
+ --enable-libxml \
+ --enable-inline-optimization \
+ --enable-gd-native-ttf \
+ --enable-mbregex \
+ --enable-mbstring \
+ --enable-opcache \
+ --enable-pcntl \
+ --enable-shmop \
+ --enable-soap \
+ --enable-sockets \
+ --enable-sysvsem \
+ --enable-xml \
+ --enable-zip
+
+ yum -y install libxslt-devel
+
+make && make install
+
+
+#会报错
+#root/php-7.0.4/ext/xmlrpc/libxmlrpc/encodings.c:74: undefined reference to `libiconv_open'
+#/root/php-7.0.4/ext/xmlrpc/libxmlrpc/encodings.c:82: undefined reference to `libiconv'
+#/root/php-7.0.4/ext/xmlrpc/libxmlrpc/encodings.c:102: undefined reference to `libiconv_close'
+
+vim Makefile
+112 行加上-liconv  EXTRA_LIBS = -lcrypt -liconv 
+
+cp php.ini-development /usr/local/php7/etc/php.ini
+cp sapi/fpm/init.d.php-fpm /etc/init.d/php7-fpm
+
+#需要注意的是php7中www.conf这个配置文件配置phpfpm的端口号等信息，如果你修改默认的9000端口号需在这里改，再改nginx的配置
+启动
+#  /etc/init.d/php7-fpm start

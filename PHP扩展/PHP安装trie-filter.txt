@@ -1,0 +1,35 @@
+环境centos6.5
+
+关键词过滤扩展，用于检查一段文本中是否出现敏感词，基于Double-Array Trie 树实现
+安装 libdatrie , 需要 libdatrie-0.2.4 或更新的版本
+它依赖 libiconv 
+
+1、安装libiconv 
+wget  http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
+tar -zvxf libiconv-1.14.tar.gz
+cd libiconv-1.14
+./configure --prefix=/usr/local/libiconv
+make && make install
+
+2、安装libdatrie
+wget http://http.debian.net/debian/pool/main/libd/libdatrie/libdatrie_0.2.8.orig.tar.xz
+tar -xvf libdatrie_0.2.8.orig.tar.xz
+cd libdatrie-0.2.8
+./configure --prefix=/usr/local/libdatrie/
+make ICONV_LIBS='/usr/local/libiconv/lib/libiconv.so'
+make install
+
+3、安装 trie_filter 扩展
+wget https://github.com/wulijun/php-ext-trie-filter/archive/master.zip
+unzip master.zip
+cd php-ext-trie-filter-master
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config --with-trie_filter=/usr/local/libdatrie/
+make && make install
+
+vi /usr/local/php/etc/php.ini
+添加：
+;duwenjun
+[extension]
+extension_dir = /usr/local/php/lib/php/extensions/no-debug-non-zts-20100525/
+extension = "trie_filter.so"

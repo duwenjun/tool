@@ -1,0 +1,27 @@
+Nginx负载均衡配置
+
+1ngixn除了可以作为后端http服务器外，还是一个高性能的反向代理服务器。在负载均衡架构中，Nginx可以为我们提供非常稳定且高效的基于第七层的负载解决方案。
+2.nginx可以根据规则提供以轮询，ip哈希，url哈希等方式调度后端真实服务器
+3.如同HAProxy一样，nginx也支持对后端服务器的健康检查功能
+
+一.安装基础服务
+yum -y install gcc pcre pcre-devel openssl openssl-devel gd gd-devel perl perl-ExtUtils-Embed
+
+二.下载nginx 
+wget http://nginx.org/download/nginx-1.9.5.tar.gz
+tar -xzf nginx-1.9.5.tar.gz -C /usr/src/
+cd /usr/src/nginx-1.9.5/
+./configure --prefix=/usr/local/nginx \
+--with-ipv6 \
+--with-http_ssl_module \
+--with-http_realip_module \
+--with-http_addition_module \
+--with-http_dav_module \
+--with-http_gzip_static_module \
+--with-http_perl_module \
+--with-mail_ssl_module 
+
+make && make install
+
+启动nginx
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf 

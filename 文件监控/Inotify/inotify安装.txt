@@ -1,0 +1,36 @@
+1.下载inotify
+wget https://github.com/rvoicilas/inotify-tools/zipball/master
+unzip master
+cd rvoicilas-inotify-tools-1df9af4/
+#新版本需要使用autogen.sh读取configure.as文件创建configure安装脚本。但是此步骤需要依赖automake以及libtool软件包，如果没有安装请先安装
+#yum -y install automake libtool
+./autogen.sh configure.ac
+./configure --prefix=/usr/local/inotify
+make && make install
+
+2.监控数据
+inotify-tool提供了两个应用程序，分别为inotifywait与inotifywatch。其中，inotifywait命令的描述用法如下。
+    描述：使用inotify机制等待文件系统事件，该命令非常适合实时监控文件系统的变化
+    用法：inotifywait [-hcmrq] [-e <event>] [-t <seconds>] [--format <fmt>] [--timefmt <fmt>] <file>...
+    选项：-h,--help 显示帮助信息
+    	  @<file>   制定监控路径中的例外文件，应用于不需要监控的文件
+    	  --fromfile <file>  从文件中读取需要监控与例外的文件名称，每行一个文件名，如果文件名称已@开头，则表示例外文件
+    	  -m,--monitor 接收到事件后不退出，默认程序在接受一个时间信息后退出
+    	  -d,--daemon  与--monitor类似，但程序会进入后台执行，需要通过--outfile制定时间信息的输出文件
+    	  -o,--outfile<file> 将时间信息输出至文件，默认输出至标准输出
+    	  -s,--syslog  将错误信息输出值syslog系统日志，默认输出至标准错误输出
+    	  -r, --recursive 递归监控
+    	  -q, --quiet 静默模式，不输出信息
+    	  --exclude <pattern> 使用正则表达式匹配例外文件，区分大小写
+    	  --excludei <pattern> 使用正则表达式匹配例外文件，不区分大小写
+    	  -t <seconds>,--timeout<seconds> 在指定的时间没有发生时间，则退出程序
+    	  -e <event>,--event<event> 仅监控制定的事件
+    	  -c ,--csv 使用csv格式输出
+    	  --timefmt <fmt> 设置时间格式，即--format制定的%T格式
+    	  --format <fmt> 制定输出信息格式，具体格式参考man手册
+
+3.测试
+mkdir -p /test;
+echo "hello duwenjun" > /test/hello
+#监控/test目录
+/usr/local/inotify/bin/inotifywait /test

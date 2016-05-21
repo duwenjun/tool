@@ -1,0 +1,93 @@
+1.Rsync是一款神器的数据镜像备份软件，它不像FTP或其他文件传输服务那么需要进行全备份，Rsync可以根据数据的变化进行差异备份，从而减少数据流量，提高工作效率。你可以使用它进行本地数据或远程数据的复制，Rsync可以使用SSH安全隧道进行加密数据传输。Rsync服务器端定义源数据，Rsync客户端仅在源数据发生改变后才会从服务器实际复制数据至本地，如果源数据在服务器端被删除，则客户端数据也会被删除，以确保主机之间的数据是同步的。Rsync使用TCP 873端口。
+
+由于Rsync的作者之一是Samba的作者，所以配置风格和samba很相似，具体大家都懂的！
+
+2.安装
+yum -y install rsync
+
+3.写配置文件
+默认rsync安装之后没有配置文件，所以需要手动写，详细请看rsyncd.conf
+
+4.创建账号，写入密码文件
+echo "duwenjun:bwcxfdszs" > /etc/rsyncd.secrets
+echo "boos:passwod" >> /etc/rsyncd.secrets
+#这个密码文件为了安装，建议权限为600
+chmod 600 /etc/rsyncd.secrets
+
+5.写提示信息，写入提示文件
+echo "hello world" > /etc/rsyncd.motd
+
+6.启动
+rsync --daemon   #就是后台运行
+#写入自启动
+echo "/usr/bin/rsync --daemon" >> /etc/rc.local
+
+7.开启873端口
+iptables -I INPUT -p tcp -dport 873 -J ACCEPT
+service iptables save
+
+
+二：客户端同步数据
+yum -y install rsync
+rsync -vzrtopg --progress duwenjun@192.168.1.191::common /test
+
+rsync命令的基本规则如下，SRC表示源地址，DEST表示目标路径
+rsync[选项]SRC ...[DEST] 
+
+下载数据
+rsync [选项] [USER]@HOST:SRC ... [DEST]
+上传数据
+rsync [选项] SRC ... [USER]@HOST:DEST
+
+选项：
+-v 显示详细信息
+-q 静默模式，无错误信息
+-a 递归模式，主要保留文件属性，等同于-rlptgoD
+-r 递归
+-b 如果目标路径已经存在同名文件，将旧的文件重名为~filename
+--back-dir 将备份文件保存至指定目录
+--suffix 制定备份文件前缀
+-u 如果目标地址中的文件比将要下载的文件新，则不执行同步，也就是说，不会用旧的文件覆盖新的文件
+-l 保留符号链接
+-p 保留文件权限属性
+-H 博阿六硬链接
+-A 保留ACL权限
+-X 保留文件附加属性
+-o 保留文件所有者属性
+-g 保留文件所属组属性
+--devices 保留设备文件
+--specials 保留特殊文件
+-t 保留修改时间属性
+-W 不错增量检查，直接复制全部文件
+-e 制定远程shell
+--existing 仅同步目标路径中已经有的文件，不下载原路径下新的文件
+--delete 删除那些仅在目标路径中存在的文件（原路径中部存在)
+-z 传输过程中对数据进行压缩
+--include=PATTERN 匹配不排除的文件
+--exclude=PATTERN 匹配需要排除的文件
+--progress 显示数据传输的进度信息
+--partial 保留因故障未出传输完成的文件
+-P 等同于--progress --partial
+--password-file=FILE 指定密码文件，将密码文件写入文件，实现非交互式数据同步
+--list-only 仅列出服务器模块列表，需要rsync服务器设置list = true
+
+
+三：如果客户端需要定期对Rsync服务器数据进行备份，可以写shell脚本，通过计划任务实现数据的定期备份工作。
+vim rsync_bak.sh
+
+#!/bin/bash
+#这个脚本的目的就是为了定期备份服务器端数据
+#date： 2015-11-11
+
+export PATH=/bin:/usr/bin:/usr/local/bin
+SRC=common
+DEST=/data
+Server=192.168.1.191
+USER=duwenjun
+#密码文件，由于要实现非交互数据传输，所以需要把密码写到一个文件中
+Passfile=/var/rsync.duwenjun.pass
+
+#如果目录不存在，则先创建.。如果密码文件不存在，则退出
+[ ! -d $DEST] && mkdir $DEST
+[ ! -e $Passfile ] && exit 2
+rsync -az --delete --password-file=$Passfile ${User}@${Server}::$SRC $DEST/$(date +%Y%m%d)

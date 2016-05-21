@@ -1,0 +1,70 @@
+Smaba安装
+    1.Smaba是Linux，Unix与windows之间进行交互操作的软件组件，
+    2.所需软件包：Samba(服务端软件包)，Samba-client(客户端软件包,Liunx用的)，Samba-common(Samba公共文件软件包).其中Samba有smbd和nmbd两个守护进程的启动脚本是独立。还是介绍一下吧！
+        1.smbd服务进程为客户端提供文件共享与打印机服务，另外，该进程还负责用户权限验证以及锁功能，smbd默认监听的端口是TCP协议的139与445，Samba通过smb服务启动smbd进程，使用netstat-nutlp查看进程端口信息
+        2.nmbd进程提供NetBIOS名称服务，以满足基于Common Internet File System(CIFS)协议的共享访问环境，Samba通过nmb服务启动nmbd进程，该进程默认使用的是UDP的137端口。
+    3.由于iptables与SELinux默认策略会阻止远程用户对Samba的访问，所以可以先关了
+
+Smaba配置
+    1.关闭防火墙与SELiunx
+    vim /etc/sysconfig/selinux
+    SELINUX=disable
+
+    service iptables stop
+
+    2.安装Samba软件
+        yum -y install samba samba-common
+
+    3.创建共享目录
+    mkdir /common
+    chmod 777 /common
+    echo "hello duwenjun" > /common/smb.txt  #创建测试文件
+
+    4.修改配置文件
+    vim /etc/samba/smb.conf
+    #在最后面家配置
+    #很重要，这是共享名称
+    [common]    
+    comment = common share
+    #很重要，这是共享的路径
+    path = /common  
+    #所有人可见 
+    browseable = yes  
+    #拒绝匿名访问
+    guest ok = no   
+    #支持写入数据
+    writable = yes  
+
+    5.创建访问帐号
+        客户端访问Samba共享时使用的账户名称必须是服务器端操作系统中真是存在的系统账户名称，但是密码不是系统的密码。你还需要单独用samba命令(smbpasswd)为这个账户创建密码。默认会将账户与密码文件存放在/var/lib/samba/private目录下。
+
+        useradd -s /sbin/nologin duwenjun
+        smbpasswd -a duwenjun
+        -------     #提示输入密码
+
+        smbpasswd命令的描述和用法如下
+        描述：修改samba密码
+        用法：smbpasswd [选项] 账户名称
+        选项： -a 添加账户并设置密码
+               -x 删除smb账户
+               -d 禁用smb账户
+               -e 启用smb账户
+
+    6.启动服务
+        service smb start
+        chkconfig smb on  #自启动
+
+Samba访问
+    1.windows客户端   
+        1.临时看  
+            cmd窗口打开   \\服务器ip\[共享名称]
+
+        2.挂载(开发推荐)
+            1.打开我的电脑
+            2.点击顶部计算机
+            3.点击映射网络驱动器
+            4.输出 \\服务器ip\[共享名称]
+            5.输入账户密码就ok啦！
+
+    2.Linux 
+      。。。后面有时间在持续更新

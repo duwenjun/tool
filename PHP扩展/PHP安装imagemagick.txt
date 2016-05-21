@@ -1,0 +1,32 @@
+环境centos6.5
+1、安装ImageMagick
+wget http://www.imagemagick.org/download/ImageMagick.tar.gz
+tar -vzxf ImageMagick.tar.gz
+cd ImageMagick-6.9.2-4
+./configure --prefix=/usr/local/imagemagick --with-webp --disable-openmp
+make && make install
+
+2.测试ImageMagick是否可以正常运行：
+/usr/local/imagemagick/bin/convert -version
+
+/*
+运行程序时，如遇到像下列这种错误：
+./tests: error while loading shared libraries: xxx.so.0:cannot open shared object file: No such file or directory
+那就表示系统不知道xxx.so 放在哪个目录下。
+/sbin/ldconfig –v
+*/
+
+3、安装PHP扩展：imagick
+wget http://pecl.php.net/get/imagick-3.1.2.tgz
+tar -zxvf imagick-3.1.2.tgz
+cd imagick-3.1.2
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config --with-imagick=/usr/local/imagemagick 
+make && make install
+
+vi /usr/local/php/etc/php.ini
+添加：
+;duwenjun
+[extension]
+extension_dir = /usr/local/php/lib/php/extensions/no-debug-non-zts-20100525/
+extension = "imagick.so"

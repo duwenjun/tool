@@ -1,0 +1,37 @@
+环境centos6.5
+首先，memcached是基于libevent的，所以确保你的系统已经装了libevent
+1、安装libevent
+wget https://sourceforge.net/projects/levent/files/libevent/libevent-2.0/libevent-2.0.22-stable.tar.gz
+tar zxvf libevent-2.0.22-stable.tar.gz
+cd libevent-2.0.22-stable
+./configure --prefix=/usr/local/libevent
+make
+make install 
+
+2.安装memcached 
+wget http://memcached.org/files/memcached-1.4.24.tar.gz
+tar zxvf memcached-1.4.24.tar.gz
+cd memcached-1.4.24
+./configure --prefix=/usr/local/memcached --with-libevent=/usrlocal/libevent
+make
+make install
+
+3.测试memcached是否可以正常运行：
+/usr/local/memcached/bin/memcached -d start -u root -p 11211   //启动memcached
+ps -aux |grep memcached
+
+4、安装PHP扩展：memcached
+wget http://pecl.php.net/get/memcache-2.2.7.tgz
+tar -zxvf memcache-2.2.7.tgz
+cd memcache-2.2.7
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config --enable-memcache
+make 
+make install
+
+vi /usr/local/php/etc/php.ini
+添加：
+;duwenjun
+[extension]
+extension_dir = /usr/local/php/lib/php/extensions/no-debug-non-zts-20100525/
+extension = "memcache.so"

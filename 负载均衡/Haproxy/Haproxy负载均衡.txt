@@ -1,0 +1,34 @@
+Haproxy负载均衡配置
+
+1.Haproxy是免费,高效,可靠的高可用及负载均衡解决方案。该软件非常适合于处理高负载站点的七层数据请求。
+2.Haproxy可以灵活的配置不同的端口和acl规则匹配不同的情况然后使用相应的服务组
+
+一.安装基础服务
+yum -y install gcc 
+
+二.下载haproxy
+wget http://haproxy.1wt.eu/download/1.4/src/haproxy-1.4.21.tar.gz
+tar -xzf haproxy-1.4.21.tar.gz -C /usr/src/
+cd /usr/src/haproxy-1.4.21
+make TARGET=linux2628 PREFIX=/usr/local/haproxy (#将haproxy安装到/usr/local/haproxy)
+make install PREFIX=/usr/local/haproxy
+
+vi /usr/local/haproxy/haproxy.cfg
+
+#修改系统日志配置文件
+vim /etc/rsyslog.conf
+#插入一下三行
+$ModLoad imudp
+$UDPServerRun 514
+local3.*                    /var/log/haproxy.log
+
+#重启系统日志服务
+service rsyslog restart
+
+#指定配置文件启动haproxy服务
+/usr/local/haproxy/sbin/haproxy -f /usr/local/haproxy/haproxy.cfg
+
+#加入自启动
+echo "/usr/local/haproxy/sbin/haproxy -f /usr/local/haproxy/haproxy.cfg" >>　/etc/rc.local
+
+#netstat -ntpl 查看端口使用情况

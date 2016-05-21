@@ -1,0 +1,50 @@
+1.单一的Rsync工具仅可以进行文件同步，单一的Inotify仅可以实现实时文件监控，而两者的结合将能满足企业对数据中心实时数据同步的要求。
+
+2.原理 
+    1.数据发布服务器配置好Rsync客户端，用来链接rsync服务端发送数据
+    2.数据发布服务器配置好Inotify监控数据。
+    3.当数据发生改变的时候触发Rsync想服务端推送数据。
+    4.这样就可以实现数据发布服务器发布数据，及时推向负载均衡配置的各web服务器。
+
+3.简单代码演示
+	1.两台web服务器，分别为web1,web2都安装好了Rsync服务器。网站目录为/www/www.haohaozhu.com
+
+	2.Rsync服务端配置
+	yum -y install rsync
+	mkdir -p /www/www.haohaozhu.com
+	chmod 660 /www/www.haohaozhu.com
+	chown nobody.nobody /www/www.haohaozhu.com
+
+	vim /etc/rsyncd.con
+	..前面忽略，可以看Rsync配置，重要的是要允许客户端上传目录和文件。要启动。防火墙要允许873端口访问
+	#第一台
+	[web1]
+	comment = web1 content
+	path = /www/www.haohaozhu.com
+	auth users = duwenjun
+	secrets fule = /etc/rsyncd.secrets
+	hosts allow=发布服务器ip
+	hosts deny=*
+	list = false
+
+	echo "duwenjun:bwcxfdszs" > /etc/rsyncd.secrets
+	chmod 600 /etc/rsyncd.secrets
+
+	#第二台
+	[web2]
+	comment = web2 content
+	path = /www/www.haohaozhu.com
+	auth users = duwenjun
+	secrets fule = /etc/rsyncd.secrets
+	hosts allow=发布服务器ip
+	hosts deny=*
+	list = false
+
+	echo "duwenjun:bwcxfdszs" > /etc/rsyncd.secrets
+	chmod 600 /etc/rsyncd.secrets
+
+	2.发布服务器配置
+		1.安装rsync
+		2.安装inotify
+		3.编写脚本，具体看notify_rsync.sh
+	hello world

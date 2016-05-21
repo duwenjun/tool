@@ -1,0 +1,41 @@
+环境centos6.5
+1、安装PHP扩展：swoole
+wget https://github.com/swoole/swoole-src/archive/swoole-1.8.1-stable.tar.gz
+tar -zxvf swoole-1.8.1-stable.tar.gz
+cd swoole-src-swoole-1.8.1-stable
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config 
+make && make install
+
+vi /usr/local/php/etc/php.ini
+添加：
+;duwenjun
+[extension]
+extension_dir = /usr/local/php/lib/php/extensions/no-debug-non-zts-20100525/
+extension = "swoole.so"
+
+
+编译参数,这一段是copy swoole官网的 官网：http://www.swoole.com/
+这里是./configure编译配置的额外参数，用于开启某些特性
+
+--enable-swoole-debug
+打开调试日志，开启此选项后swoole将打印各类细节的调试日志。生产环境不要启用。
+
+--enable-sockets
+增加对sockets资源的支持，依赖sockets扩展。开启此参数，swoole_event_add就可以添加sockets扩展创建的连接到swoole的事件循环中。
+
+--enable-async-mysql
+增加异步mysql支持， 依赖mysqli和mysqlnd扩展。
+
+--enable-async-redis
+增加异步Redis客户端支持， 依赖hiredis库
+
+--enable-async-httpclient
+增加异步Http和WebSocket客户端支持
+
+--enable-ringbuffer
+开启RingBuffer内存池
+
+此设置为试验性质，主要用于提升性能，生产环境请不要开启
+--enable-openssl
+启用SSL支持
