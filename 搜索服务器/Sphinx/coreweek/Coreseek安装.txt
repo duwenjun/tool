@@ -1,0 +1,149 @@
+一、  Sphinx简介
+Sphinx是由俄罗斯人Andrew Aksyonoff开发的一个全文检索引擎。意图为其他应用提供高速、低空间占用、高结果 相关度的全文搜索功能。Sphinx可以非常容易的与SQL数据库和脚本语言集成。当前系统内置MySQL和PostgreSQL 数据库数据源的支持，也支持从标准输入读取特定格式 的XML数据。
+Sphinx的特性如下：
+a)  高速的建立索引(在当代CPU上，峰值性能可达到10 MB/秒);
+b)  高性能的搜索(在2 – 4GB 的文本数据上，平均每次检索响应时间小于0.1秒);
+c)  可处理海量数据(目前已知可以处理超过100 GB的文本数据, 在单一CPU的系统上可 处理100 M 文档);
+d)  提供了优秀的相关度算法，基于短语相似度和统计（BM25）的复合Ranking方法;
+e)  支持分布式搜索;
+f)  支持短语搜索
+g)  提供文档摘要生成
+h)  可作为MySQL的存储引擎提供搜索服务;
+i)  支持布尔、短语、词语相似度等多种检索模式;
+j)  文档支持多个全文检索字段(最大不超过32个);
+k)  文档支持多个额外的属性信息(例如：分组信息，时间戳等);
+l)  支持断词;
+
+Sphinx是全文搜索引擎，但是不支持中文。
+
+1.Coreseek是现在用的最多的sphinx中文全文检索，它提供了为Sphinx设计的中文分词包LibMMSeg ，是基于sphinx的基础上开发的
+
+安装：
+	1.安装m4-1.4.13、autoconf-2.64、automake-1.11、libtool-2.2.6
+		(1)m4-1.4.13
+			wget  http://mirrors.kernel.org/gnu/m4/m4-1.4.13.tar.gz  
+			tar -xzvf m4-1.4.13.tar.gz
+			cd m4-1.4.13  
+			./configure --prefix=/usr/local  
+			make && make install  
+		(2)autoconf-2.64
+			wget http://mirrors.kernel.org/gnu/autoconf/autoconf-2.64.tar.gz
+			tar -xzvf autoconf-2.64.tar.gz 
+			cd autoconf-2.64
+			./configure --prefix=/usr/local
+			make && make install 
+		(3)automake-1.11
+			wget http://mirrors.kernel.org/gnu/automake/automake-1.11.tar.gz
+			tar xzvf automake-1.11.tar.gz
+			cd automake-1.11
+			./configure --prefix=/usr/local  
+			make && make install
+		(4)libtool-2.2.6
+			wget http://mirrors.kernel.org/gnu/libtool/libtool-2.2.6b.tar.gz
+			tar xzvf libtool-2.2.6b.tar.gz
+			cd libtool-2.2.6b
+			./configure --prefix=/usr/local
+			make && make install
+
+	2.安装coreseek
+	wget http://www.coreseek.cn/uploads/csft/4.0/coreseek-4.1-beta.tar.gz 
+	tar -zxvf coreseek-4.1-beta.tar.gz
+	cd coreseek-4.1-beta
+	    (1) 安装mmseg(coreseek所使用的词典)
+	    cd mmseg-3.2.14
+	    ./bootstrap    #输出的warning信息可以忽略，如果出现error则需要解决
+	    ./configure --prefix=/usr/local/mmseg3
+	    #如果出现如下错误：
+		#config.status: error: cannot find input file: src/Makefile.in 
+		#运行：
+		# aclocal
+		# libtoolize --force
+		# automake --add-missing
+		# autoconf
+		# autoheader
+		# make clean
+		# ./configure --prefix=/usr/local/mmseg3
+	    make 
+	    make install
+	    cd ..
+	    (2) 安装coreseek(sphinx)
+	    cd csft-4.1/
+	    sh buildconf.sh    #输出的warning信息可以忽略，如果出现error则需要解决
+	    #一定要安装mysql不然会失败，反正就是不安装就失败！
+	    ./configure --prefix=/usr/local/coreseek  --without-unixodbc --with-mmseg --with-mmseg-includes=/usr/local/mmseg3/include/mmseg/ --with-mmseg-libs=/usr/local/mmseg3/lib/ --with-mysql=/usr/local/mysql
+	    #如果报错
+	    collect2: ld 返回 1 
+		make[2]: *** [indexer] 错误 1 
+		make[2]: Leaving directory `/setup/coreseek-3.2.14/csft-3.2.14/src' 
+		make[1]: *** [all] 错误 2 
+		make[1]: Leaving directory `/setup/coreseek-3.2.14/csft-3.2.14/src' 
+		make: *** [all-recursive] 错误 1
+		 
+		解决
+		一开始以为libiconv的问题，又重装了几次还是一样，最后终于找着办法了
+		编辑：
+		./src/MakeFile文件
+		将
+		LIBS = -lm -lexpat -L/usr/local/lib
+		改成
+		LIBS = -lm -lexpat -liconv -L/usr/local/lib
+	    #
+	    make
+	    make install
+	    cd ..
+	    (3) 测试mmseg分词和coreseek搜索
+	    cd testpack
+	    cat var/test/test.xml  #此时应该正确显示中文
+	    /usr/local/mmseg3/bin/mmseg -d /usr/local/mmseg3/etc var/test/test.xml
+	    /usr/local/coreseek/bin/indexer -c etc/csft.conf --all   #创建索引
+		/usr/local/coreseek/bin/search -c etc/csft.conf 网络搜索
+		#此时正确的应该返回
+		#words:
+		#1. '网络': 1 documents, 1 hits
+		#2. '搜索': 2 documents, 5 hits
+
+
+	(3)安装PHP扩展
+		(1)必须先安装libsphinxclient,后面php扩展需要的。前面下载解压的就不说了，都懂的。
+			cd /root/coreseek-4.1-beta/csft-4.1/api/libsphinxclient
+			./configure --prefix=/usr/local/libsphinxclient
+			make
+			make install
+		(2)安装php sphinx扩展
+			wget http://pecl.php.net/get/sphinx-1.3.3.tgz
+			tar -zxvf sphinx-1.3.3.tgz 
+			cd sphinx-1.3.3
+			/usr/local/php/bin/phpize
+			./configure --with-php-config=/usr/local/php/bin/php-config --with-sphinx=/usr/local/libsphinxclient
+			make && make install
+
+	vi /usr/local/php/etc/php.ini
+	添加：
+	;duwenjun
+	[extension]
+	extension_dir = /usr/local/php/lib/php/extensions/no-debug-non-zts-20100525/
+	extension = "sphinx.so"
+
+
+sphinx如何工作
+	1.sphinx配置文件
+	2.利用indexer工具生成索引文件
+	/usr/local/coreseek/bin/indexer --config /usr/local/coreseek/etc/sphinx.conf --all
+	#若此时searchd守护进程已经启动，那么需要加上—rotate参数：
+	#/usr/local/coreseek/bin/indexer --config /usr/local/coreseek/etc/sphinx.conf --all --rotate
+	3.searchd:后台进程，使用indexer工具生成的数据做查询
+	/usr/local/coreseek/bin/searchd --config /usr/local/coreseek/etc/sphinx.conf
+	#searchd这个工具必须要运行，不解释。
+	工作方式：indexer ->index data<- searchd<- service/web
+
+	#索引文件存储的数据种类
+	.spa 存储文档属性
+	.spd 存储每个词ID可匹配的文档id列表
+	.sph 存储索引头信息
+	.spi 存储词列表
+	.spm 存储MVA数据
+	.spp 存储每个词的命中列表
+
+查看sphinx数据
+1.通过--命令进入
+mysql -h0 -P9306 

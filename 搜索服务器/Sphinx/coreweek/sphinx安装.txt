@@ -1,0 +1,74 @@
+sphinx的官网为 www.sphinxsearch.com
+1.下载sphinx
+    #这个需要在html页面浏览器下载，
+    http://sphinxsearch.com/downloads/sphinx-2.2.10-1.rhel6.x86_64.rpm/thankyou.html
+    点击按钮下载下来
+
+2.安装
+	#sphinx官网上面有详细的安装教程，照着上面说的安装就好啦！
+	#在centos6.5下
+	yum install postgresql-libs unixODBC
+	rpm -Uhv sphinx-2.2.10-1.rhel6.x86_64.rpm
+	service searchd start   #启动
+
+3.配置文件
+	查看安装位置
+	whereis sphinx
+	#.. /etc/sphinx         /usr/share/sphinx
+
+	#/etc/sphinx  存放sphinx工具的配置文件
+	#/usr/share/sphinx   存放sphinx的api。api目录里面提供的各种语言操作的api
+	#安装完成之后sphinx还提供了两个非常好用的工具，存放在/usr/bin 里面
+	#indexer                这个工具用来创建索引
+	#searchd               后端生成工具进程
+
+
+sphinx如何工作
+	1.sphinx配置文件
+	2.利用indexer工具生成索引文件
+	/usr/bin/indexer --config /etc/sphinx/sphinx.conf --all
+	3.searchd:后台进程，使用indexer工具生成的数据做查询
+	#searchd这个工具必须要运行，不解释。
+	工作方式：indexer ->index data<- searchd<- service/web
+
+
+	#索引文件存储的数据种类
+	.spa 存储文档属性
+	.spd 存储每个词ID可匹配的文档id列表
+	.sph 存储索引头信息
+	.spi 存储词列表
+	.spm 存储MVA数据
+	.spp 存储每个词的命中列表
+
+查看sphinx数据
+1.通过--命令进入
+mysql -h0 -P9306 
+
+
+一、  Sphinx简介
+Sphinx是由俄罗斯人Andrew Aksyonoff开发的一个全文检索引擎。意图为其他应用提供高速、低空间占用、高结果 相关度的全文搜索功能。Sphinx可以非常容易的与SQL数据库和脚本语言集成。当前系统内置MySQL和PostgreSQL 数据库数据源的支持，也支持从标准输入读取特定格式 的XML数据。
+Sphinx的特性如下：
+a)  高速的建立索引(在当代CPU上，峰值性能可达到10 MB/秒);
+b)  高性能的搜索(在2 – 4GB 的文本数据上，平均每次检索响应时间小于0.1秒);
+c)  可处理海量数据(目前已知可以处理超过100 GB的文本数据, 在单一CPU的系统上可 处理100 M 文档);
+d)  提供了优秀的相关度算法，基于短语相似度和统计（BM25）的复合Ranking方法;
+e)  支持分布式搜索;
+f)  支持短语搜索
+g)  提供文档摘要生成
+h)  可作为MySQL的存储引擎提供搜索服务;
+i)  支持布尔、短语、词语相似度等多种检索模式;
+j)  文档支持多个全文检索字段(最大不超过32个);
+k)  文档支持多个额外的属性信息(例如：分组信息，时间戳等);
+l)  支持断词;
+
+源码
+#进入链接地址，下载源码包
+http://sphinxsearch.com/downloads/sphinx-2.2.10-release.tar.gz/thankyou.html
+tar -zxvf sphinx-2.2.10-release.tar.gz 
+cd sphinx-2.2.10-release
+./configure --prefix=/usr/local/sphinx/   --with-mysql  --enable-id64
+make
+make install
+#注意：采用这种方式安装不支持中文分词。
+#启动
+/usr/local/sphinx/bin/searchd --config /usr/local/sphinx/etc/sphinx.conf

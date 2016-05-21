@@ -1,0 +1,47 @@
+1：Solr是一个高性能，采用Java5开发，基于Lucene的全文搜索服务器。同时对其进行了扩展，提供了比Lucene更为丰富的查询语言，同时实现了可配置、可扩展并对查询性能进行了优化，并且提供了一个完善的功能管理界面，是一款非常优秀的全文搜索引擎。
+2. 由于Solr是基于Lucene的，而Lucene又是基于Java开发的，所以需要提前安装好java。同时运行的时候需要一个web服务器，java里面用的比较最多的是tomcat。所以我们还需要安装 tomcat。等于就是在tomcat里面里面运行Solr服务！
+
+3.安装Solr
+	1.安装java,一般Linux自带就安装了java环境，可以通过java -version 命令查看。
+	    如果没有安装Java则先安装java
+	    #卸载原有的java
+	    rpm -qa | grep java
+	    rpm -e --nodeps [java版本]
+
+	    #这个东西有点流氓，需要你同意协议之后才能下载，就是说在linux wget还不能下载了，需要在浏览器点击接受许可协议，然后下载jdk-[版本标识]-linux-x64.tar.gz
+	    JDK下载地址：http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+	    mkdir  /usr/local/java
+	    tar -zxvf jdk-8u65-linux-x64.gz -C /usr/local/java
+	    #设置环境变量
+	    vim /etc/profile
+	    JAVA_HOME=/usr/local/java/jdk1.8.0_65
+		JRE_HOME=/usr/local/java/jdk1.8.0_65/jre
+		PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+		CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+		export JAVA_HOME JRE_HOME PATH CLASSPATH
+		#让环境变量生效
+		source /etc/profile
+
+	2.安装tomcat，现在最新版本为tomcat8，但是我们用稳定版本tomcat7
+    wget http://apache.fayea.com/tomcat/tomcat-7/v7.0.65/bin/apache-tomcat-7.0.65.tar.gz
+    tar -zxvf apache-tomcat-7.0.65.tar.gz
+    #这个不用安装，解压开然后剪切目录到指定目录就可以了
+    mv  apache-tomcat-7.0.65 /usr/local/tomcat7
+    chmod +x /usr/local/tomcat7/
+    #启动tomcat
+    /usr/local/tomcat7/bin/startup.sh
+    #关闭
+    /usr/local/tomcat7/bin/shutdown.sh
+    #默认开启端口为8080，可以服务器防火墙允许8080端口访问后再浏览器  ip地址:8080访问
+
+    3.安装Solr
+    #这个有点奇怪，好像是说Solr 5.3版本的不用安装tomcat的。安装了java这样运行就可以的了！
+
+    wget http://mirror.bit.edu.cn/apache/lucene/solr/5.3.1/solr-5.3.1.tgz
+    tar xf solr-5.3.1.tgz
+    cd solr-5.3.1/
+    bin/solr start -e cloud -noprompt
+
+    #你可以看到,Solr通过加载运行Solr在web浏览器管理界面:http://localhost:8983/solr/。 这是使用Solr的主要出发点。
+
+
