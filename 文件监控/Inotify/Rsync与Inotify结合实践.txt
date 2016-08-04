@@ -7,20 +7,20 @@
     4.这样就可以实现数据发布服务器发布数据，及时推向负载均衡配置的各web服务器。
 
 3.简单代码演示
-	1.两台web服务器，分别为web1,web2都安装好了Rsync服务器。网站目录为/www/www.haohaozhu.com
+	1.两台web服务器，分别为web1,web2都安装好了Rsync服务器。网站目录为/www/www.duwenjun.com
 
 	2.Rsync服务端配置
 	yum -y install rsync
-	mkdir -p /www/www.haohaozhu.com
-	chmod 660 /www/www.haohaozhu.com
-	chown nobody.nobody /www/www.haohaozhu.com
+	mkdir -p /www/www.duwenjun.com
+	chmod 660 /www/www.duwenjun.com
+	chown nobody.nobody /www/www.duwenjun.com
 
 	vim /etc/rsyncd.con
 	..前面忽略，可以看Rsync配置，重要的是要允许客户端上传目录和文件。要启动。防火墙要允许873端口访问
 	#第一台
 	[web1]
 	comment = web1 content
-	path = /www/www.haohaozhu.com
+	path = /www/www.duwenjun.com
 	auth users = duwenjun
 	secrets fule = /etc/rsyncd.secrets
 	hosts allow=发布服务器ip
@@ -33,7 +33,7 @@
 	#第二台
 	[web2]
 	comment = web2 content
-	path = /www/www.haohaozhu.com
+	path = /www/www.duwenjun.com
 	auth users = duwenjun
 	secrets fule = /etc/rsyncd.secrets
 	hosts allow=发布服务器ip
